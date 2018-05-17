@@ -9,19 +9,30 @@ from django.conf import settings
 from requests_toolbelt import MultipartEncoder
 
 
-def downloadPhoto(self, media_id, filename, media=False, path='local/photos/'):
-    if not media:
-        self.mediaInfo(media_id)
-        if not self.LastJson.get('items'):
-            return True
-        media = self.LastJson['items'][0]
-    filename = '{0}_{1}.jpg'.format(media['user']['username'], media_id) if not filename else '{0}.jpg'.format(filename)
-    if media['media_type'] != 1:
-        return True
-    images = media['image_versions2']['candidates']
+# def downloadPhoto(self, media_id, filename, media=False, path='local/photos/'):
+#     if not media:
+#         self.mediaInfo(media_id)
+#         if not self.LastJson.get('items'):
+#             return True
+#         media = self.LastJson['items'][0]
+#     filename = '{0}_{1}.jpg'.format(media['user']['username'], media_id) if not filename else '{0}.jpg'.format(filename)
+#     if media['media_type'] != 1:
+#         return True
+#     images = media['image_versions2']['candidates']
+#     if os.path.exists(path + filename):
+#         return os.path.abspath(path + filename)
+#     response = self.s.get(images[0]['url'], stream=True)
+#     if response.status_code == 200:
+#         with open(path + filename, 'wb') as f:
+#             response.raw.decode_content = True
+#             shutil.copyfileobj(response.raw, f)
+#         return os.path.abspath(path + filename)
+
+
+def downloadPhoto(self, source_url, filename, path):
     if os.path.exists(path + filename):
         return os.path.abspath(path + filename)
-    response = self.s.get(images[0]['url'], stream=True)
+    response = self.s.get(source_url, stream=True)
     if response.status_code == 200:
         with open(path + filename, 'wb') as f:
             response.raw.decode_content = True

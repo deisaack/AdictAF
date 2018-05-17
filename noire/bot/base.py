@@ -32,7 +32,7 @@ from .api_search import (fbUserSearch, searchLocation, searchTags,
 from .api_video import configureVideo, downloadVideo, uploadVideo
 from .bot_filter import filter_medias
 from .bot_get import (get_archived_medias, get_total_user_medias, convert_to_user_id,
-                      get_user_medias, get_your_medias)
+                      get_user_medias, get_your_medias, get_userid_from_username)
 from .prepare import delete_credentials, get_credentials
 
 __all__ = ['NoireBot',]
@@ -331,7 +331,6 @@ class NoireBot(object):
         return self.SendRequest(url)
 
 
-
     def get_archived_medias(self, as_dict=False):
         """
         Returns your archived media ids. With parameter as_dict=True returns media as dict.
@@ -372,8 +371,11 @@ class NoireBot(object):
     def megaphoneLog(self):
         return self.SendRequest('megaphone/log/')
 
-    def downloadPhoto(self, media_id, filename, media=False, path='local/photos/'):
-        return downloadPhoto(self, media_id, filename, media, path)
+    def downloadPhoto(self, source_url, filename, path):
+        return downloadPhoto(self, source_url, filename, path)
+
+    # def downloadPhoto(self, media_id, filename, media=False, path='local/photos/'):
+    #     return downloadPhoto(self, media_id, filename, media, path)
 
     def uploadVideo(self, photo, caption=None, upload_id=None):
         return uploadVideo(self, photo, caption, upload_id)
@@ -852,3 +854,6 @@ class NoireBot(object):
 
     def convert_to_user_id(self, usernames):
         return convert_to_user_id(self, usernames)
+
+    def get_userid_from_username(self, username):
+        return get_userid_from_username(self, username)

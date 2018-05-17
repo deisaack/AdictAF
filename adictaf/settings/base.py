@@ -3,16 +3,10 @@ import os
 from decouple import Csv, config
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-CRYPTO_KEY = config('CRYPTO_KEY')
-
 LIVE_DIR = os.path.join(os.path.dirname(BASE_DIR), 'live')
 
-SECRET_KEY=config('SECRET_KEY')
-
-
 AUTH_USER_MODEL = 'users.User'
-
+CELERY_BROKER_URL = 'amqp://localhost'
 CORS_ALLOW_HEADERS = (
     'accept',
     'accept-encoding',
@@ -34,7 +28,7 @@ CORS_ALLOW_METHODS = (
     'PUT',
     'TRACE',
 )
-
+CRYPTO_KEY = config('CRYPTO_KEY')
 DATABASES = {
     "default": {
         "ENGINE": 'django.db.backends.postgresql_psycopg2',
@@ -75,10 +69,12 @@ INSTALLED_APPS = [
     'django_ses',
     'rest_framework',
     'django_filters',
+    'raven.contrib.django.raven_compat',
 
     'noire',
 ]
 
+LANGUAGE_CODE = 'en-us'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -93,7 +89,10 @@ MIDDLEWARE = [
 
 
 ROOT_URLCONF = 'adictaf.urls'
-
+SECRET_KEY=config('SECRET_KEY')
+STATIC_DIRS = (
+    os.path.join(BASE_DIR, 'static')
+)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -109,22 +108,19 @@ TEMPLATES = [
         },
     },
 ]
+TIME_ZONE = 'UTC'
 
-STATIC_DIRS = (
-    os.path.join(BASE_DIR, 'static')
-)
+
 
 WSGI_APPLICATION = 'adictaf.wsgi.application'
 
-LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = config('USE_TZ', False, cast=bool)
 
 os.environ['TZ'] = 'Africa/Nairobi'
 
@@ -153,11 +149,37 @@ NOIRE['USER_AGENT'] = 'Instagram 10.26.0 Android ({android_version}/{android_rel
 import raven
 
 RAVEN_CONFIG = {
-    'dsn': 'https://32c4ef1a76b34582b7aa9bbf09e499f6:f8c0c222395c452d8e81875f52e28f0b@sentry.io/1193729',
+    'dsn': 'https://38f9bed0f04646c39c5b161e120392c3:055bd27a24d3464c90a247c95105ca37@sentry.io/1205371',
     # If you are using git, you can also automatically configure the
     # release based on the git info.
     'release': raven.fetch_git_sha(os.path.join(BASE_DIR)),
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        # 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'adictaf.utilities.AdictAFAdminOrReadOnly',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'adictaf.utilities.paginators.AdictAFPagination',
+    'PAGE_SIZE': 15,
+}
+
+HEROKU = config('HEROKU', False)
+if HEROKU:
+    import dj_database_url
+
+    db_from_env = dj_database_url.config()
+    DATABASES['default'].update(db_from_env)
+    DATABASES['default']['CONN_MAX_AGE'] = 500
 
 LOGGING = {
     'version': 1,
